@@ -641,33 +641,25 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
         xbmc.Player().setSubtitles(subtitle)
 
 def handle_wait(time_to_wait,title,text):
-    logger.info ("[xbmctools.py] handle_wait(time_to_wait=%d)" % time_to_wait)
     import xbmc,xbmcgui
-    espera = xbmcgui.DialogProgress()
-    ret = espera.create(' '+title)
-
-    secs=0
-    percent=0
-    increment = int(100 / time_to_wait)
-
-    cancelled = False
-    while secs < time_to_wait:
-        secs = secs + 1
-        percent = increment*secs
-        secs_left = str((time_to_wait - secs))
+    dlg = xbmcgui.DialogProgress()
+    dlg.create(' '+title)
+    
+    for i in range(0, time_to_wait):
+        percent = int((i+1.0)*100/time_to_wait)
+        secs_left = str((time_to_wait - i))
         remaining_display = ' Espera '+secs_left+' segundos para que comience el vídeo...'
-        espera.update(percent,' '+text,remaining_display)
+        dlg.update(percent,' '+text,remaining_display)
         xbmc.sleep(1000)
-        if (espera.iscanceled()):
-             cancelled = True
-             break
-
-    if cancelled == True:     
-         logger.info ('Espera cancelada')
-         return False
-    else:
-         logger.info ('Espera finalizada')
-         return True
+        if(dlg.iscanceled()):
+            xbmc.sleep(500)
+            dlg.close()
+            return False
+            
+    dlg.update(100," "," ")
+    xbmc.sleep(500)
+    dlg.close()
+    return True
 
 def getLibraryInfo (mediaurl):
     '''Obtiene información de la Biblioteca si existe (ficheros strm) o de los parámetros
